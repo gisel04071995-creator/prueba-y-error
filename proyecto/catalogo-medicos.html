@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NUESTROS PROFECIONALES</title>
+<!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+  <!-- Barra de navegación -->
+  <nav class="navbar navbar-expand-lg navbar-clinica" style="background-color: #005A9C;">
+    <div class="container">
+      <a class="navbar-brand text-white">CLINICA YUNES</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link text-white" href="index.html">INICIO</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="institucional.html">INSTITUCIONAL</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="contacto.html">CONTACTOS</a></li>
+          <li class="nav-item"><a class="nav-link text-white active" href="reservar-turnos.html">RESERVAR TURNOS</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="admin/login.html">ADMINISTRACIÓN</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-5">
+    <h2 class="text-center mb-4">NUESTROS PROFECIONALES</h2>
+    <div class="row" id="medicos-lista">
+      <!-- Las tarjetas se insertarán aquí dinámicamente -->
+    </div>
+  </main>
+
+  <footer class="bg-primary text-white text-center py-3 mt-5">
+    <p class="mb-0">&copy; 2025 CLINICA YUNES</p>
+  </footer>
+
+  <script src="js/init.js"></script>
+  <script>
+    function mostrarMedicosVisitante() {
+      const medicos = JSON.parse(localStorage.getItem('medicos')) || [];
+      const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+      const container = document.getElementById('medicos-lista');
+      container.innerHTML = '';
+
+      medicos.forEach(m => {
+        const especialidades = JSON.parse(localStorage.getItem('especialidades')) || [];
+        const especialidadNombre = especialidades.find(e => e.id == m.especialidad)?.nombre || 'Desconocida';
+
+        const obras = JSON.parse(localStorage.getItem('obrasSociales')) || [];
+        const obrasNombres = m.obrasSociales.map(id => {
+          const o = obras.find(os => os.id == id);
+          return o ? o.nombre : 'Desconocida';
+        }).join(', ');
+
+        const horarios = "Lunes a Viernes 8:00 - 16:00";
+        const consultorio = "N° 103";
+        const matricula = "MN " + m.matricula;
+
+        const turnosDisponibles = turnos.filter(t => t.medicoId === m.id && t.disponible);
+
+        let botonHTML = '';
+        if (turnosDisponibles.length > 0) {
+          
+          botonHTML = `<a href="reservar-turnos.html?medico=${m.id}" class="btn btn-primary w-100">Solicitar Turno</a>`;
+        } else {
+          botonHTML = `<span class="btn btn-danger w-100 disabled">No hay turnos disponibles</span>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4 mb-4';
+        card.innerHTML = `
+          <div class="card h-100">
+            <img src="${m.fotografia}" class="card-img-top" alt="${m.nombre} ${m.apellido}" style="height: 200px; object-fit: cover;">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${m.nombre} ${m.apellido}</h5>
+              <p class="card-text small flex-grow-1">
+                <strong>Especialidad:</strong> ${especialidadNombre}<br>
+                <strong>Obras Sociales:</strong> ${obrasNombres}<br>
+                <strong>Horarios:</strong> ${horarios}<br>
+                <strong>Consultorio:</strong> ${consultorio}<br>
+                <strong>Matrícula:</strong> ${matricula}
+              </p>
+              ${botonHTML}
+              <a href="#" class="btn btn-outline-secondary mt-2"
+                 onclick="alert('Información completa del médico:\\n\\nNombre: ${m.nombre} ${m.apellido}\\nEspecialidad: ${especialidadNombre}\\nObras: ${obrasNombres}\\nDescripción: ${m.descripcion.replace(/'/g, "\\'").replace(/\n/g, '\\n')}'); return false;">
+                Ver más información
+              </a>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', mostrarMedicosVisitante);
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+    .navbar-clinica {
+      background-color: #005A9C;
+    }
+    .navbar-clinica .navbar-brand,
+    .navbar-clinica .nav-link {
+      color: white !important;
+    }
+    .navbar-clinica .nav-link:hover {
+      color: #fff !important;
+      text-decoration: underline;
+    }
+    .footer-bg {
+      background-color: #005A9C;
+      color: white;
+    }
+    .medico-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .medico-foto {
+      height: 200px;
+      object-fit: cover;
+    }
+    .medico-info {
+      flex-grow: 1;
+    }

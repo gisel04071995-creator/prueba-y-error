@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel de Administración</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Estilo personalizado -->
+   <link rel="stylesheet" href="../css/panel-administrativo.css">
+  <style>
+   
+  </style>
+</head>
+<body>
+  <!-- Barra de encabezado -->
+  <header class="bg-header p-3">
+    <div class="container d-flex justify-content-between align-items-center">
+      <h1 class="h4 mb-0">Panel de Administración</h1>
+      <a href="#" class="text-white" onclick="cerrarSesion()">
+        <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+      </a>
+    </div>
+  </header>
+
+  <!-- Barra de navegación con menú hamburguesa -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="medicos.html">MEDICOS</a></li>
+          <li class="nav-item"><a class="nav-link" href="especialidades.html">ESPECIALIDADES</a></li>
+          <li class="nav-item"><a class="nav-link" href="obras-sociales.html">OBRAS SOCIALES</a></li>
+          <li class="nav-item"><a class="nav-link" href="turnos.html">TURNOS</a></li>
+          <li class="nav-item"><a class="nav-link" href="reservas.html">RESERVAS</a></li>
+          <li class="nav-item"><a class="nav-link" href="usuarios.html">USUARIOS</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-5">
+    <!-- Mensaje de bienvenida -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="alert welcome-alert d-flex align-items-center" role="alert">
+          <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+          <div>
+            <h4 class="alert-heading">¡Bienvenido al Panel de Administración!</h4>
+            <p>Desde aquí puede gestionar todos los aspectos de la clínica. Use el menú de navegación o los accesos directos a continuación.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card stat-card text-white bg-primary text-center p-3">
+          <h5>Médicos</h5>
+          <p class="display-6" id="stat-medicos">0</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card text-white bg-success text-center p-3">
+          <h5>Reservas</h5>
+          <p class="display-6" id="stat-reservas">0</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card text-white bg-info text-center p-3">
+          <h5>Turnos</h5>
+          <p class="display-6" id="stat-turnos">0</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card text-white bg-warning text-center p-3">
+          <h5>Obras Sociales</h5>
+          <p class="display-6" id="stat-obras">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accesos directos -->
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="card action-card">
+          <div class="card-body text-center">
+            <i class="bi bi-person-circle fs-1 text-primary mb-3"></i>
+            <h5 class="card-title">Gestión de Médicos</h5>
+            <p class="card-text">Agregar, editar o eliminar profesionales.</p>
+            <a href="medicos.html" class="btn btn-primary">Ir a Médicos</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card action-card">
+          <div class="card-body text-center">
+            <i class="bi bi-calendar-check fs-1 text-success mb-3"></i>
+            <h5 class="card-title">Gestión de Reservas</h5>
+            <p class="card-text">Visualizar todas las reservas realizadas.</p>
+            <a href="reservas.html" class="btn btn-success">Ver Reservas</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card action-card">
+          <div class="card-body text-center">
+            <i class="bi bi-people fs-1 text-info mb-3"></i>
+            <h5 class="card-title">Usuarios del Sistema</h5>
+            <p class="card-text">Lista de usuarios de DummyJSON.</p>
+            <a href="usuarios.html" class="btn btn-info">Ver Usuarios</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="../js/utils.js"></script>
+  <script src="../js/panel-administrativo.js"></script>
+  <script>
+    // Verificar autenticación al cargar
+    verificarAutenticacion();
+
+    // Cargar estadísticas al cargar la página
+    window.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('stat-medicos').textContent = JSON.parse(localStorage.getItem('medicos'))?.length || 0;
+      document.getElementById('stat-reservas').textContent = JSON.parse(localStorage.getItem('reservas'))?.length || 0;
+      document.getElementById('stat-turnos').textContent = JSON.parse(localStorage.getItem('turnos'))?.length || 0;
+      document.getElementById('stat-obras').textContent = JSON.parse(localStorage.getItem('obrasSociales'))?.length || 0;
+    });
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
