@@ -1,148 +1,96 @@
-// js/reservas.js
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reservar Turno</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Estilo personalizado -->
+  <link rel="stylesheet" href="css/reserva-turno.css">
 
-/**
- * Función para cargar los datos necesarios para el formulario de reserva.
- * Obtiene los médicos, obras sociales y turnos desde localStorage.
- */
-function cargarDatosFormulario() {
-    // Obtener los datos de localStorage
-    const medicos = JSON.parse(localStorage.getItem('medicos')) || [];
-    const obrasSociales = JSON.parse(localStorage.getItem('obrasSociales')) || [];
-    const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+</head>
+<body>
+  <!-- Barra de navegación -->
+  <nav class="navbar navbar-expand-lg navbar-clinica">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">CLINICA YUNES</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="institucional.html">Institucional</a></li>
+          <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+          <li class="nav-item"><a class="nav-link" href="catalogo-medicos.html">Médicos</a></li>
+          <li class="nav-item"><a class="nav-link" href="admin/login.html">Administración</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-    // Referencias a los elementos del DOM
-    const selectMedico = document.getElementById('medico');
-    const selectObraSocial = document.getElementById('obraSocial');
-    const selectTurno = document.getElementById('turno');
-    const valorTotalSpan = document.getElementById('valor-total');
+  <main class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card form-card">
+          <h2 class="text-center mb-4">Reservar Turno</h2>
+          <form id="form-reserva" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label for="documento" class="form-label">Documento</label>
+              <input type="text" class="form-control" id="documento" required>
+              <div class="invalid-feedback">El documento es obligatorio.</div>
+            </div>
+            <div class="mb-3">
+              <label for="nombrePaciente" class="form-label">Nombre y Apellido</label>
+              <input type="text" class="form-control" id="nombrePaciente" required>
+              <div class="invalid-feedback">El nombre y apellido son obligatorios.</div>
+            </div>
+            <div class="mb-3">
+              <label for="medico" class="form-label">Médico</label>
+              <select class="form-select" id="medico" required>
+                <option value="">Seleccionar...</option>
+              </select>
+              <div class="invalid-feedback">Seleccione un médico.</div>
+            </div>
+            <div class="mb-3">
+              <label for="obraSocial" class="form-label">Obra Social</label>
+              <select class="form-select" id="obraSocial" required>
+                <option value="">Seleccionar...</option>
+              </select>
+              <div class="invalid-feedback">Seleccione una obra social.</div>
+            </div>
+            <div class="mb-3">
+              <label for="turno" class="form-label">Turno</label>
+              <select class="form-select" id="turno" required>
+                <option value="">Seleccionar...</option>
+              </select>
+              <div class="invalid-feedback">Seleccione un turno disponible.</div>
+            </div>
+            <div class="mb-3 valor-total">
+              <strong>Valor total:</strong> $<span id="valor-total">0.00</span>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-confirmar">Confirmar Reserva</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
 
-    // Limpiar los selects
-    selectMedico.innerHTML = '<option value="">Seleccionar...</option>';
-    selectObraSocial.innerHTML = '<option value="">Seleccionar...</option>';
-    selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
+  <footer class="footer-bg text-center py-3 mt-auto">
+    <p class="mb-0">&copy; 2025 CLINICA YUNES</p>
+  </footer>
 
-    // Llenar el select de Médicos
-    medicos.forEach(medico => {
-        const option = document.createElement('option');
-        option.value = medico.id;
-        option.textContent = `${medico.nombre} ${medico.apellido} - ${medico.especialidad}`;
-        selectMedico.appendChild(option);
+  <script src="js/init.js"></script>
+  <script src="js/reservas.js"></script>
+  <script>
+    // Cargar datos al cargar la página
+    window.addEventListener('DOMContentLoaded', function() {
+      cargarDatosFormulario();
     });
+  </script>
 
-    // Llenar el select de Obras Sociales
-    obrasSociales.forEach(obra => {
-        const option = document.createElement('option');
-        option.value = obra.id;
-        option.textContent = obra.nombre;
-        selectObraSocial.appendChild(option);
-    });
-
-    // Función para actualizar los turnos disponibles según el médico seleccionado
-    selectMedico.addEventListener('change', function () {
-        const medicoId = this.value;
-        if (!medicoId) {
-            selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
-            return;
-        }
-
-        // Filtrar turnos disponibles para el médico seleccionado
-        const turnosDisponibles = turnos.filter(t => t.medicoId == medicoId && t.disponible);
-
-        // Limpiar el select de turnos
-        selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
-
-        // Agregar los turnos disponibles
-        turnosDisponibles.forEach(turno => {
-            const option = document.createElement('option');
-            option.value = turno.id;
-            // Formatear la fecha y hora (ejemplo: "Lunes 15/11/2025 a las 09:00")
-            const fecha = new Date(turno.fechaHora);
-            const diaSemana = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
-            const fechaStr = fecha.toLocaleDateString('es-ES');
-            const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            option.textContent = `${diaSemana} ${fechaStr} a las ${horaStr}`;
-            selectTurno.appendChild(option);
-        });
-    });
-
-    // Función para calcular y mostrar el valor total
-    function calcularValorTotal() {
-        const medicoId = selectMedico.value;
-        const obraSocialId = selectObraSocial.value;
-        const turnoId = selectTurno.value;
-
-        if (!medicoId || !obraSocialId || !turnoId) {
-            valorTotalSpan.textContent = '0.00';
-            return;
-        }
-
-        // Encontrar el médico seleccionado
-        const medico = medicos.find(m => m.id == medicoId);
-        if (!medico) {
-            valorTotalSpan.textContent = '0.00';
-            return;
-        }
-
-        // Para simplificar, usamos el valor de consulta del médico directamente.
-        // En un sistema real, podrías tener un cálculo basado en la obra social.
-        valorTotalSpan.textContent = medico.valorConsulta.toFixed(2);
-    }
-
-    // Escuchar cambios en los selects para recalcular el valor total
-    selectMedico.addEventListener('change', calcularValorTotal);
-    selectObraSocial.addEventListener('change', calcularValorTotal);
-    selectTurno.addEventListener('change', calcularValorTotal);
-
-    // Validación del formulario con Bootstrap
-    const form = document.getElementById('form-reserva');
-    form.addEventListener('submit', function (event) {
-        event.preventDefault(); // Evitar el envío por defecto
-
-        if (!form.checkValidity()) {
-            event.stopPropagation();
-            form.classList.add('was-validated');
-            return;
-        }
-
-        // Si es válido, proceder con la reserva
-        realizarReserva();
-    });
-}
-
-/**
- * Función para realizar la reserva.
- * Guarda los datos en localStorage y muestra un mensaje de éxito.
- */
-function realizarReserva() {
-    const documento = document.getElementById('documento').value;
-    const nombrePaciente = document.getElementById('nombrePaciente').value;
-    const medicoId = document.getElementById('medico').value;
-    const obraSocialId = document.getElementById('obraSocial').value;
-    const turnoId = document.getElementById('turno').value;
-
-    // Generar un ID único para la reserva
-    const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
-    const nuevaReserva = {
-        id: reservas.length > 0 ? Math.max(...reservas.map(r => r.id)) + 1 : 1,
-        documento: documento,
-        nombrePaciente: nombrePaciente,
-        turnoId: parseInt(turnoId),
-        medicoId: parseInt(medicoId),
-        obraSocialId: parseInt(obraSocialId),
-        // Calcular el valor total (usamos el valor del médico)
-        valorTotal: parseFloat(document.getElementById('valor-total').textContent)
-    };
-
-    // Añadir la reserva al array
-    reservas.push(nuevaReserva);
-
-    // Guardar en localStorage
-    localStorage.setItem('reservas', JSON.stringify(reservas));
-
-    // Mostrar mensaje de éxito
-    alert(`¡Reserva confirmada!\n\nDocumento: ${documento}\nNombre: ${nombrePaciente}\nMédico: ${document.getElementById('medico').options[document.getElementById('medico').selectedIndex].text}\nTurno: ${document.getElementById('turno').options[document.getElementById('turno').selectedIndex].text}\nValor Total: $${nuevaReserva.valorTotal}`);
-
-    // Reiniciar el formulario
-    document.getElementById('form-reserva').reset();
-    document.getElementById('form-reserva').classList.remove('was-validated');
-}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
