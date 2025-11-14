@@ -1,0 +1,30 @@
+ .navbar-clinica {
+      background-color: #005A9C;
+    }
+    .navbar-clinica .navbar-brand,
+    .navbar-clinica .nav-link {
+      color: white !important;
+    }
+    .hero-section {
+      background: linear-gradient(rgba(0, 90, 156, 0.8), rgba(0, 90, 156, 0.9)), url('assets/img/fondo-index.jpg') center/cover no-repeat fixed;
+      color: white;
+      padding: 6rem 1rem;
+      text-align: center;
+    }
+    .footer-bg {
+      background-color: #005A9C;
+      color: white;
+    }
+    .feature-card {
+      transition: transform 0.3s;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+    .stat-box {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
