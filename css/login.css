@@ -1,0 +1,10 @@
+ .navbar-clinica {
+      background-color: #005A9C;
+    }
+    .navbar-clinica .navbar-brand,
+    .navbar-clinica .nav-link {
+      color: white !important;
+    }
+    .navbar-clinica .nav-link:hover {
+      color: #fff !important;
+      text-decoration: underline;}
