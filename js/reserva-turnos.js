@@ -1,156 +1,148 @@
-// Recuperar entidades desde localStorage
-const medicos = JSON.parse(localStorage.getItem('medicos')) || [];
-const obrasSociales = [
-  { id: 'OSDE', nombre: 'OSDE (20% desc.)' },
-  { id: 'IOMA', nombre: 'IOMA (15% desc.)' },
-  { id: 'Swiss Medical', nombre: 'Swiss Medical (25% desc.)' },
-  { id: 'Particular', nombre: 'Particular (0% desc.)' }
-];
-const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
+// js/reservas.js
 
-// Obtener parámetro de URL
-function getQueryParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
-}
+/**
+ * Función para cargar los datos necesarios para el formulario de reserva.
+ * Obtiene los médicos, obras sociales y turnos desde localStorage.
+ */
+function cargarDatosFormulario() {
+    // Obtener los datos de localStorage
+    const medicos = JSON.parse(localStorage.getItem('medicos')) || [];
+    const obrasSociales = JSON.parse(localStorage.getItem('obrasSociales')) || [];
+    const turnos = JSON.parse(localStorage.getItem('turnos')) || [];
 
-// Cargar médicos en el select
-function cargarSelectMedicos() {
-  const select = document.getElementById('medico');
-  select.innerHTML = '<option value="">Seleccionar...</option>';
-  
-  medicos.forEach(m => {
-    const option = document.createElement('option');
-    option.value = m.id;
-    option.textContent = `${m.nombre} - ${m.especialidad}`;
-    select.appendChild(option);
-  });
+    // Referencias a los elementos del DOM
+    const selectMedico = document.getElementById('medico');
+    const selectObraSocial = document.getElementById('obraSocial');
+    const selectTurno = document.getElementById('turno');
+    const valorTotalSpan = document.getElementById('valor-total');
 
-  // Si hay un parámetro "medico" en la URL, seleccionarlo
-  const medicoId = getQueryParam('medico');
-  if (medicoId) {
-    select.value = medicoId;
-    cargarObrasSociales(parseInt(medicoId));
-    cargarTurnos(parseInt(medicoId));
-    actualizarValorTotal(parseInt(medicoId));
-  }
-}
+    // Limpiar los selects
+    selectMedico.innerHTML = '<option value="">Seleccionar...</option>';
+    selectObraSocial.innerHTML = '<option value="">Seleccionar...</option>';
+    selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
 
-// Cargar obras sociales del médico seleccionado
-function cargarObrasSociales(medicoId) {
-  const medico = medicos.find(m => m.id === medicoId);
-  const select = document.getElementById('obraSocial');
-  select.innerHTML = '<option value="">Seleccionar...</option>';
-  
-  if (medico) {
-    medico.obrasSociales.forEach(id => {
-      const obra = obrasSociales.find(o => o.id === id);
-      if (obra) {
+    // Llenar el select de Médicos
+    medicos.forEach(medico => {
+        const option = document.createElement('option');
+        option.value = medico.id;
+        option.textContent = `${medico.nombre} ${medico.apellido} - ${medico.especialidad}`;
+        selectMedico.appendChild(option);
+    });
+
+    // Llenar el select de Obras Sociales
+    obrasSociales.forEach(obra => {
         const option = document.createElement('option');
         option.value = obra.id;
         option.textContent = obra.nombre;
-        select.appendChild(option);
-      }
+        selectObraSocial.appendChild(option);
     });
-  }
-}
 
-// Cargar turnos disponibles para el médico
-function cargarTurnos(medicoId) {
-  const select = document.getElementById('turno');
-  select.innerHTML = '<option value="">Seleccionar...</option>';
-  
-  turnos
-    .filter(t => t.medicoId === medicoId && t.disponible)
-    .forEach(t => {
-      const option = document.createElement('option');
-      option.value = t.id;
-      option.textContent = `${t.fecha} ${t.hora}`;
-      select.appendChild(option);
+    // Función para actualizar los turnos disponibles según el médico seleccionado
+    selectMedico.addEventListener('change', function () {
+        const medicoId = this.value;
+        if (!medicoId) {
+            selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
+            return;
+        }
+
+        // Filtrar turnos disponibles para el médico seleccionado
+        const turnosDisponibles = turnos.filter(t => t.medicoId == medicoId && t.disponible);
+
+        // Limpiar el select de turnos
+        selectTurno.innerHTML = '<option value="">Seleccionar...</option>';
+
+        // Agregar los turnos disponibles
+        turnosDisponibles.forEach(turno => {
+            const option = document.createElement('option');
+            option.value = turno.id;
+            // Formatear la fecha y hora (ejemplo: "Lunes 15/11/2025 a las 09:00")
+            const fecha = new Date(turno.fechaHora);
+            const diaSemana = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
+            const fechaStr = fecha.toLocaleDateString('es-ES');
+            const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            option.textContent = `${diaSemana} ${fechaStr} a las ${horaStr}`;
+            selectTurno.appendChild(option);
+        });
     });
-}
 
-// Actualizar valor total según el médico y la obra social
-function actualizarValorTotal(medicoId) {
-  const medico = medicos.find(m => m.id === medicoId);
-  const span = document.getElementById('valor-total');
-  
-  if (medico) {
-    let valorBase = medico.valorConsulta;
-    let descuento = 0;
-    
-    const obraSocial = document.getElementById('obraSocial').value;
-    switch (obraSocial) {
-      case 'OSDE':
-        descuento = 20;
-        break;
-      case 'IOMA':
-        descuento = 15;
-        break;
-      case 'Swiss Medical':
-        descuento = 25;
-        break;
-      case 'Particular':
-      default:
-        descuento = 0;
-        break;
+    // Función para calcular y mostrar el valor total
+    function calcularValorTotal() {
+        const medicoId = selectMedico.value;
+        const obraSocialId = selectObraSocial.value;
+        const turnoId = selectTurno.value;
+
+        if (!medicoId || !obraSocialId || !turnoId) {
+            valorTotalSpan.textContent = '0.00';
+            return;
+        }
+
+        // Encontrar el médico seleccionado
+        const medico = medicos.find(m => m.id == medicoId);
+        if (!medico) {
+            valorTotalSpan.textContent = '0.00';
+            return;
+        }
+
+        // Para simplificar, usamos el valor de consulta del médico directamente.
+        // En un sistema real, podrías tener un cálculo basado en la obra social.
+        valorTotalSpan.textContent = medico.valorConsulta.toFixed(2);
     }
-    
-    const costoFinal = valorBase * (1 - descuento / 100);
-    span.textContent = costoFinal.toFixed(2);
-  } else {
-    span.textContent = '0.00';
-  }
+
+    // Escuchar cambios en los selects para recalcular el valor total
+    selectMedico.addEventListener('change', calcularValorTotal);
+    selectObraSocial.addEventListener('change', calcularValorTotal);
+    selectTurno.addEventListener('change', calcularValorTotal);
+
+    // Validación del formulario con Bootstrap
+    const form = document.getElementById('form-reserva');
+    form.addEventListener('submit', function (event) {
+        event.preventDefault(); // Evitar el envío por defecto
+
+        if (!form.checkValidity()) {
+            event.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Si es válido, proceder con la reserva
+        realizarReserva();
+    });
 }
 
-// Eventos
-document.getElementById('medico').addEventListener('change', function() {
-  const medicoId = parseInt(this.value);
-  if (medicoId) {
-    cargarObrasSociales(medicoId);
-    cargarTurnos(medicoId);
-    actualizarValorTotal(medicoId);
-  } else {
-    document.getElementById('obraSocial').innerHTML = '<option value="">Seleccionar...</option>';
-    document.getElementById('turno').innerHTML = '<option value="">Seleccionar...</option>';
-    document.getElementById('valor-total').textContent = '0.00';
-  }
-});
+/**
+ * Función para realizar la reserva.
+ * Guarda los datos en localStorage y muestra un mensaje de éxito.
+ */
+function realizarReserva() {
+    const documento = document.getElementById('documento').value;
+    const nombrePaciente = document.getElementById('nombrePaciente').value;
+    const medicoId = document.getElementById('medico').value;
+    const obraSocialId = document.getElementById('obraSocial').value;
+    const turnoId = document.getElementById('turno').value;
 
-document.getElementById('obraSocial').addEventListener('change', actualizarValorTotal);
+    // Generar un ID único para la reserva
+    const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+    const nuevaReserva = {
+        id: reservas.length > 0 ? Math.max(...reservas.map(r => r.id)) + 1 : 1,
+        documento: documento,
+        nombrePaciente: nombrePaciente,
+        turnoId: parseInt(turnoId),
+        medicoId: parseInt(medicoId),
+        obraSocialId: parseInt(obraSocialId),
+        // Calcular el valor total (usamos el valor del médico)
+        valorTotal: parseFloat(document.getElementById('valor-total').textContent)
+    };
 
-document.getElementById('form-reserva').addEventListener('submit', function(event) {
-  event.preventDefault();
-  
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-  
-  const reserva = {
-    id: Date.now(),
-    documento: document.getElementById('documento').value,
-    nombrePaciente: document.getElementById('nombrePaciente').value,
-    medicoId: parseInt(document.getElementById('medico').value),
-    obraSocial: document.getElementById('obraSocial').value,
-    turnoId: parseInt(document.getElementById('turno').value),
-    valorTotal: parseFloat(document.getElementById('valor-total').textContent),
-    fecha: new Date().toLocaleDateString()
-  };
-  
-  const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
-  reservas.push(reserva);
-  localStorage.setItem('reservas', JSON.stringify(reservas));
-  
-  alert('¡Reserva realizada con éxito!');
-  
-  // Resetear formulario
-  this.reset();
-  document.getElementById('valor-total').textContent = '0.00';
-  document.getElementById('medico').focus();
-  
-  this.classList.remove('was-validated');
-});
+    // Añadir la reserva al array
+    reservas.push(nuevaReserva);
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', cargarSelectMedicos);
+    // Guardar en localStorage
+    localStorage.setItem('reservas', JSON.stringify(reservas));
+
+    // Mostrar mensaje de éxito
+    alert(`¡Reserva confirmada!\n\nDocumento: ${documento}\nNombre: ${nombrePaciente}\nMédico: ${document.getElementById('medico').options[document.getElementById('medico').selectedIndex].text}\nTurno: ${document.getElementById('turno').options[document.getElementById('turno').selectedIndex].text}\nValor Total: $${nuevaReserva.valorTotal}`);
+
+    // Reiniciar el formulario
+    document.getElementById('form-reserva').reset();
+    document.getElementById('form-reserva').classList.remove('was-validated');
+}
